@@ -24,18 +24,18 @@ def load_image(img_path, target_size=(224, 224)):
 
 def augment_image(img):
     """Apply random augmentation to an image."""
-    # Random horizontal flip
+    # Random horizontal flip (Very common for animals)
     if random.random() > 0.5:
         img = np.fliplr(img)
     
-    # Random rotation (simple 90 degree rotations)
-    k = random.choice([0, 1, 2, 3])
-    if k > 0:
-        img = np.rot90(img, k)
-    
-    # Random brightness adjustment
-    brightness = random.uniform(0.8, 1.2)
+    # Random brightness adjustment (Gentle)
+    brightness = random.uniform(0.9, 1.1)
     img = np.clip(img * brightness, 0, 1)
+    
+    # Add random Gaussian noise (Simulates sensor noise)
+    if random.random() > 0.5:
+        noise = np.random.normal(0, 0.02, img.shape) 
+        img = np.clip(img + noise, 0, 1)
     
     return img.astype(np.float32)
 
@@ -55,7 +55,7 @@ def load_dataset(data_dir, target_size=(224, 224)):
     cats_dir = os.path.join(data_dir, 'cats')
     dogs_dir = os.path.join(data_dir, 'dogs')
     
-    MAX_IMAGES = 1000 # Limit to avoid OOM
+    MAX_IMAGES = 3000 # Limit to avoid OOM
     
     # Load cats (label 0)
     if os.path.exists(cats_dir):

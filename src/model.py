@@ -15,16 +15,37 @@ class SimpleCNN:
     def __init__(self, input_shape=(224, 224, 3), hidden_units=128):
         self.input_shape = input_shape
         self.input_size = np.prod(input_shape)
-        self.hidden_units = hidden_units
         
-        # Initialize weights with Xavier initialization
+        # Architecture: Input -> h1 -> h2 -> h3 -> Output
+        # hidden_units arg sets the size of the FIRST hidden layer
+        self.h1_size = hidden_units
+        self.h2_size = hidden_units // 2
+        self.h3_size = hidden_units // 4
+        
+        # Initialize weights with He initialization
         self.weights = {
-            'hidden': np.random.randn(self.input_size, hidden_units) * np.sqrt(2.0 / self.input_size),
-            'output': np.random.randn(hidden_units, 1) * np.sqrt(2.0 / hidden_units)
+            'h1': np.random.randn(self.input_size, self.h1_size) * np.sqrt(2.0 / self.input_size),
+            'h2': np.random.randn(self.h1_size, self.h2_size) * np.sqrt(2.0 / self.h1_size),
+            'h3': np.random.randn(self.h2_size, self.h3_size) * np.sqrt(2.0 / self.h2_size),
+            'out': np.random.randn(self.h3_size, 1) * np.sqrt(2.0 / self.h3_size)
         }
         self.biases = {
-            'hidden': np.zeros(hidden_units),
-            'output': np.zeros(1)
+            'h1': np.zeros(self.h1_size),
+            'h2': np.zeros(self.h2_size),
+            'h3': np.zeros(self.h3_size),
+            'out': np.zeros(1)
+        }
+        
+        # Momentum state
+        self.velocity = {
+            'w_h1': np.zeros_like(self.weights['h1']),
+            'w_h2': np.zeros_like(self.weights['h2']),
+            'w_h3': np.zeros_like(self.weights['h3']),
+            'w_out': np.zeros_like(self.weights['out']),
+            'b_h1': np.zeros_like(self.biases['h1']),
+            'b_h2': np.zeros_like(self.biases['h2']),
+            'b_h3': np.zeros_like(self.biases['h3']),
+            'b_out': np.zeros_like(self.biases['out'])
         }
         
     def relu(self, x):
@@ -35,15 +56,24 @@ class SimpleCNN:
     
     def forward(self, x):
         """Forward pass through the network."""
-        # Flatten input
         batch_size = x.shape[0]
         x_flat = x.reshape(batch_size, -1)
         
-        # Hidden layer
-        hidden = self.relu(np.dot(x_flat, self.weights['hidden']) + self.biases['hidden'])
+        # Hidden layer 1
+        self.z1 = np.dot(x_flat, self.weights['h1']) + self.biases['h1']
+        self.a1 = self.relu(self.z1)
+        
+        # Hidden layer 2
+        self.z2 = np.dot(self.a1, self.weights['h2']) + self.biases['h2']
+        self.a2 = self.relu(self.z2)
+        
+        # Hidden layer 3
+        self.z3 = np.dot(self.a2, self.weights['h3']) + self.biases['h3']
+        self.a3 = self.relu(self.z3)
         
         # Output layer
-        output = self.sigmoid(np.dot(hidden, self.weights['output']) + self.biases['output'])
+        self.z4 = np.dot(self.a3, self.weights['out']) + self.biases['out']
+        output = self.sigmoid(self.z4)
         
         return output.flatten()
     
@@ -62,59 +92,106 @@ class SimpleCNN:
         return -np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
     
     def train_step(self, x, y, learning_rate=0.001):
-        """One training step with basic gradient descent."""
+        """One training step with gradient descent."""
         batch_size = x.shape[0]
         x_flat = x.reshape(batch_size, -1)
         
-        # Forward pass
-        hidden_input = np.dot(x_flat, self.weights['hidden']) + self.biases['hidden']
-        hidden_output = self.relu(hidden_input)
+        # Forward pass (re-using forward logic to keep gradients consistent)
+        z1 = np.dot(x_flat, self.weights['h1']) + self.biases['h1']
+        a1 = self.relu(z1)
         
-        output_input = np.dot(hidden_output, self.weights['output']) + self.biases['output']
-        y_pred = self.sigmoid(output_input).flatten()
+        z2 = np.dot(a1, self.weights['h2']) + self.biases['h2']
+        a2 = self.relu(z2)
         
-        # Compute loss
+        z3 = np.dot(a2, self.weights['h3']) + self.biases['h3']
+        a3 = self.relu(z3)
+        
+        z4 = np.dot(a3, self.weights['out']) + self.biases['out']
+        y_pred = self.sigmoid(z4).flatten()
+        
+        # Loss
         loss = self.compute_loss(y, y_pred)
         
         # Backward pass
-        d_output = (y_pred - y).reshape(-1, 1) / batch_size
+        # Output layer gradients
+        d_z4 = (y_pred - y).reshape(-1, 1) / batch_size
         
-        d_weights_output = np.dot(hidden_output.T, d_output)
-        d_biases_output = np.sum(d_output, axis=0)
+        d_w_out = np.dot(a3.T, d_z4)
+        d_b_out = np.sum(d_z4, axis=0)
         
-        d_hidden = np.dot(d_output, self.weights['output'].T)
-        d_hidden[hidden_input <= 0] = 0  # ReLU derivative
+        # Hidden layer 3 gradients
+        d_a3 = np.dot(d_z4, self.weights['out'].T)
+        d_z3 = d_a3 * (z3 > 0)
         
-        d_weights_hidden = np.dot(x_flat.T, d_hidden)
-        d_biases_hidden = np.sum(d_hidden, axis=0)
+        d_w_h3 = np.dot(a2.T, d_z3)
+        d_b_h3 = np.sum(d_z3, axis=0)
         
-        # Update weights
-        self.weights['output'] -= learning_rate * d_weights_output
-        self.biases['output'] -= learning_rate * d_biases_output
-        self.weights['hidden'] -= learning_rate * d_weights_hidden
-        self.biases['hidden'] -= learning_rate * d_biases_hidden
+        # Hidden layer 2 gradients
+        d_a2 = np.dot(d_z3, self.weights['h3'].T)
+        d_z2 = d_a2 * (z2 > 0)
+        
+        d_w_h2 = np.dot(a1.T, d_z2)
+        d_b_h2 = np.sum(d_z2, axis=0)
+        
+        # Hidden layer 1 gradients
+        d_a1 = np.dot(d_z2, self.weights['h2'].T)
+        d_z1 = d_a1 * (z1 > 0)
+        
+        d_w_h1 = np.dot(x_flat.T, d_z1)
+        d_b_h1 = np.sum(d_z1, axis=0)
+        
+        # Updates with Momentum
+        beta = 0.9
+        
+        # Output layer
+        self.velocity['w_out'] = beta * self.velocity['w_out'] - learning_rate * d_w_out
+        self.velocity['b_out'] = beta * self.velocity['b_out'] - learning_rate * d_b_out
+        self.weights['out'] += self.velocity['w_out']
+        self.biases['out'] += self.velocity['b_out']
+        
+        # Hidden layer 3
+        self.velocity['w_h3'] = beta * self.velocity['w_h3'] - learning_rate * d_w_h3
+        self.velocity['b_h3'] = beta * self.velocity['b_h3'] - learning_rate * d_b_h3
+        self.weights['h3'] += self.velocity['w_h3']
+        self.biases['h3'] += self.velocity['b_h3']
+        
+        # Hidden layer 2
+        self.velocity['w_h2'] = beta * self.velocity['w_h2'] - learning_rate * d_w_h2
+        self.velocity['b_h2'] = beta * self.velocity['b_h2'] - learning_rate * d_b_h2
+        self.weights['h2'] += self.velocity['w_h2']
+        self.biases['h2'] += self.velocity['b_h2']
+        
+        # Hidden layer 1
+        self.velocity['w_h1'] = beta * self.velocity['w_h1'] - learning_rate * d_w_h1
+        self.velocity['b_h1'] = beta * self.velocity['b_h1'] - learning_rate * d_b_h1
+        self.weights['h1'] += self.velocity['w_h1']
+        self.biases['h1'] += self.velocity['b_h1']
         
         return loss
     
     def save(self, filepath):
         """Save model weights to file."""
         np.savez(filepath, 
-                 weights_hidden=self.weights['hidden'],
-                 weights_output=self.weights['output'],
-                 biases_hidden=self.biases['hidden'],
-                 biases_output=self.biases['output'],
+                 w_h1=self.weights['h1'], b_h1=self.biases['h1'],
+                 w_h2=self.weights['h2'], b_h2=self.biases['h2'],
+                 w_h3=self.weights['h3'], b_h3=self.biases['h3'],
+                 w_out=self.weights['out'], b_out=self.biases['out'],
                  input_shape=self.input_shape,
-                 hidden_units=self.hidden_units)
+                 hidden_units=self.h1_size)
     
     @classmethod
     def load(cls, filepath):
         """Load model from file."""
         data = np.load(filepath)
         model = cls(tuple(data['input_shape']), int(data['hidden_units']))
-        model.weights['hidden'] = data['weights_hidden']
-        model.weights['output'] = data['weights_output']
-        model.biases['hidden'] = data['biases_hidden']
-        model.biases['output'] = data['biases_output']
+        model.weights['h1'] = data['w_h1']
+        model.biases['h1'] = data['b_h1']
+        model.weights['h2'] = data['w_h2']
+        model.biases['h2'] = data['b_h2']
+        model.weights['h3'] = data['w_h3']
+        model.biases['h3'] = data['b_h3']
+        model.weights['out'] = data['w_out']
+        model.biases['out'] = data['b_out']
         return model
 
 

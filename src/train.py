@@ -11,6 +11,7 @@ import matplotlib
 matplotlib.use('Agg')  # Non-interactive backend
 import matplotlib.pyplot as plt
 from datetime import datetime
+import json
 
 # Add parent dir to path
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -66,7 +67,7 @@ def plot_confusion_matrix(cm, save_path):
     return save_path
 
 
-def train_model(data_dir='data/raw', epochs=10, batch_size=16, learning_rate=0.0005, hidden_units=64):
+def train_model(data_dir='data/raw', epochs=25, batch_size=16, learning_rate=0.0005, hidden_units=256):
     """Main training function with MLflow tracking."""
     
     # Set up MLflow
@@ -108,6 +109,12 @@ def train_model(data_dir='data/raw', epochs=10, batch_size=16, learning_rate=0.0
         # Training loop
         print("\nStarting training...")
         for epoch in range(epochs):
+            # LR Step Decay
+            if epoch > 0 and epoch % 5 == 0:
+                learning_rate *= 0.5
+                print(f"Decaying learning rate to {learning_rate}")
+                mlflow.log_param(f"lr_epoch_{epoch}", learning_rate)
+
             # Train on batches
             epoch_losses = []
             batch_gen = create_augmented_batch(X_train, y_train, batch_size, augment=True)
@@ -137,6 +144,12 @@ def train_model(data_dir='data/raw', epochs=10, batch_size=16, learning_rate=0.0
             
             if val_acc > best_val_acc:
                 best_val_acc = val_acc
+            
+            # Save checkpoint every 5 epochs
+            if (epoch + 1) % 5 == 0:
+                ckpt_path = f'models/checkpoint_epoch_{epoch+1}.npz'
+                model.save(ckpt_path)
+                mlflow.log_artifact(ckpt_path)
         
         # Final evaluation on test set
         test_pred = model.predict(X_test)
@@ -163,7 +176,6 @@ def train_model(data_dir='data/raw', epochs=10, batch_size=16, learning_rate=0.0
         
         
         # Save metrics to JSON for DVC
-        import json
         metrics = {
             "test_accuracy": test_acc,
             "best_val_accuracy": best_val_acc
@@ -180,9 +192,9 @@ def train_model(data_dir='data/raw', epochs=10, batch_size=16, learning_rate=0.0
 if __name__ == "__main__":
     model, accuracy = train_model(
         data_dir='data/raw',
-        epochs=1,
+        epochs=25,
         batch_size=16,
         learning_rate=0.0005,
-        hidden_units=64
+        hidden_units=256
     )
     print(f"\nTraining complete! Final test accuracy: {accuracy:.4f}")
