@@ -16,7 +16,8 @@ def load_image(img_path, target_size=(224, 224)):
         if img.mode != 'RGB':
             img = img.convert('RGB')
         img = img.resize(target_size, Image.BILINEAR)
-        return np.array(img, dtype=np.float32) / 255.0
+        # Normalize to [-1, 1] for better gradient flow
+        return (np.array(img, dtype=np.float32) / 127.5) - 1.0
     except Exception as e:
         print(f"Error loading {img_path}: {e}")
         return None
@@ -30,14 +31,15 @@ def augment_image(img):
     
     # Random brightness adjustment (Gentle)
     brightness = random.uniform(0.9, 1.1)
-    img = np.clip(img * brightness, 0, 1)
+    img = img * brightness
     
     # Add random Gaussian noise (Simulates sensor noise)
     if random.random() > 0.5:
         noise = np.random.normal(0, 0.02, img.shape) 
-        img = np.clip(img + noise, 0, 1)
+        img = img + noise
     
-    return img.astype(np.float32)
+    # Clip back to valid range [-1, 1]
+    return np.clip(img, -1, 1).astype(np.float32)
 
 
 def load_dataset(data_dir, target_size=(224, 224)):
@@ -55,7 +57,7 @@ def load_dataset(data_dir, target_size=(224, 224)):
     cats_dir = os.path.join(data_dir, 'cats')
     dogs_dir = os.path.join(data_dir, 'dogs')
     
-    MAX_IMAGES = 4000 # Limit to avoid OOM
+    MAX_IMAGES = 5000 # Limit to avoid OOM
     
     # Load cats (label 0)
     if os.path.exists(cats_dir):

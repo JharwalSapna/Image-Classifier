@@ -123,7 +123,7 @@ def train_model(data_dir='data/raw', epochs=25, batch_size=16, learning_rate=0.0
             
             for batch_idx in range(n_batches):
                 batch_x, batch_y = next(batch_gen)
-                loss = model.train_step(batch_x, batch_y, learning_rate, reg_lambda=0.0, dropout_rate=0.0)
+                loss = model.train_step(batch_x, batch_y, learning_rate)
                 epoch_losses.append(loss)
             
             train_loss = np.mean(epoch_losses)

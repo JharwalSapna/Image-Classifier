@@ -23,30 +23,30 @@ stages:
       nfiles: 24998
     - path: src/data_preprocessing.py
       hash: md5
-      md5: f053793fefae7e1a9aa80e0bda4ad0ed
-      size: 4748
+      md5: 57218bbb1376ffa3f315127fcae11396
+      size: 4833
     - path: src/model.py
       hash: md5
-      md5: d401ce677993d70ae3d27c7378d3e673
-      size: 5894
+      md5: 27151548201f724139ba032ffd9b7c69
+      size: 9172
     - path: src/train.py
       hash: md5
-      md5: e4091f267418e0c7acde08b798c261f3
-      size: 6314
+      md5: fe817963d5b280d3e1c2d9d1d85f65c2
+      size: 6915
     outs:
     - path: models/cats_dogs_model.npz
       hash: md5
-      md5: 808a93a6e11b016e48de6887e4a083b8
-      size: 154210272
+      md5: 2a1f404ab3e11611c438c56f9816a10a
+      size: 308615616
     - path: models/confusion_matrix.png
       hash: md5
-      md5: 2b62f4c819abc943452bc0370f43e7fa
-      size: 17397
+      md5: 2f14fdeb828d1bd03e65c38f4f0f8672
+      size: 18111
     - path: models/metrics.json
       hash: md5
-      md5: 1b8e5e4dd77e72fdb58f33429d284b21
-      size: 60
+      md5: 746f59b54292ef49b59a67dabc642194
+      size: 65
     - path: models/training_curves.png
       hash: md5
-      md5: 481004656a3ddc07faf61e3137c6f7c7
-      size: 38346
+      md5: 972f47f53d9213a5528e7036c65f3f0a
+      size: 36673
