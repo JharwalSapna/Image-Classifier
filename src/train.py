@@ -193,9 +193,9 @@ def train_model(data_dir='data/raw', epochs=25, batch_size=16, learning_rate=0.0
 if __name__ == "__main__":
     model, accuracy = train_model(
         data_dir='data/raw',
-        epochs=25,
-        batch_size=16,
+        epochs=30,
+        batch_size=32,
         learning_rate=0.0005,
-        hidden_units=256
+        hidden_units=1024
     )
     print(f"\nTraining complete! Final test accuracy: {accuracy:.4f}")
