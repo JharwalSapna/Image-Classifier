@@ -10,7 +10,6 @@ on:
     branches: [main]
 
 env:
-  DOCKER_IMAGE: catsdogs-classifier
   KUBE_NAMESPACE: default
 
 jobs:
@@ -34,9 +33,13 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
       
+      - name: Lowercase Repo Name
+        run: |
+          echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+
       - name: Update deployment image
         run: |
-          sed -i "s|image:.*|image: ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE }}:${{ github.sha }}|g" k8s/deployment.yaml
+          sed -i "s|image:.*|image: ghcr.io/${{ env.REPO_LC }}:${{ github.sha }}|g" k8s/deployment.yaml
       
       - name: Deploy to Kubernetes
         run: |
