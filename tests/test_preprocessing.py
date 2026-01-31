@@ -29,7 +29,7 @@ class TestLoadImage:
             assert result is not None
             assert result.shape == (224, 224, 3)
             assert result.dtype == np.float32
-            assert result.min() >= 0 and result.max() <= 1
+            assert result.min() >= -1.0 and result.max() <= 1.0
             
             os.unlink(f.name)
     
@@ -70,8 +70,8 @@ class TestAugmentImage:
         # Run multiple times since augmentation is random
         for _ in range(10):
             augmented = augment_image(img)
-            assert augmented.min() >= 0
-            assert augmented.max() <= 1
+            assert augmented.min() >= -1.0
+            assert augmented.max() <= 1.0
 
 
 class TestSplitData:

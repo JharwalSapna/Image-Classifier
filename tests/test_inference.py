@@ -20,10 +20,14 @@ class TestSimpleCNN:
         """Test that model initializes with correct shapes."""
         model = SimpleCNN(input_shape=(224, 224, 3), hidden_units=64)
         
-        assert model.weights['hidden'].shape == (224 * 224 * 3, 64)
-        assert model.weights['output'].shape == (64, 1)
-        assert model.biases['hidden'].shape == (64,)
-        assert model.biases['output'].shape == (1,)
+        assert model.weights['h1'].shape == (224 * 224 * 3, 64)
+        assert model.weights['h2'].shape == (64, 32)
+        assert model.weights['h3'].shape == (32, 16)
+        assert model.weights['out'].shape == (16, 1)
+        assert model.biases['h1'].shape == (64,)
+        assert model.biases['h2'].shape == (32,)
+        assert model.biases['h3'].shape == (16,)
+        assert model.biases['out'].shape == (1,)
     
     def test_forward_pass_output_shape(self):
         """Test that forward pass produces correct output shape."""
