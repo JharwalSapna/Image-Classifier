@@ -26,3 +26,8 @@ mlruns/
 # OS
 .DS_Store
 Thumbs.db
+*.npz
+# Models generated files
+models/cats_dogs_model.npz
+models/training_curves.png
+models/confusion_matrix.png
