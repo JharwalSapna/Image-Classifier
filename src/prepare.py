@@ -71,7 +71,6 @@ def prepare_data(data_dir='data/raw'):
         zip_ref.extractall(temp_extract_dir)
         
     # Move and Clean
-    # The zip contains 'PetImages/Cat' and 'PetImages/Dog'
     source_root = temp_extract_dir / "PetImages"
     
     for class_name in ['Cat', 'Dog']:
