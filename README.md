@@ -158,3 +158,8 @@ The project includes a GitHub Actions pipeline (`.github/workflows/ci.yaml`) tha
 1.  **Lints** the code with Flake8.
 2.  **Tests** the capabilities with Pytest (`tests/`).
 3.  **Builds** the Docker image upon successful checks.
+
+## Repository
+
+GitHub: [https://github.com/JharwalSapna/Image-Classifier](https://github.com/JharwalSapna/Image-Classifier)
+
