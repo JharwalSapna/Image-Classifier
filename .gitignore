@@ -31,3 +31,4 @@ Thumbs.db
 models/cats_dogs_model.npz
 models/training_curves.png
 models/confusion_matrix.png
+MLOPS_Assignment2.pdf
