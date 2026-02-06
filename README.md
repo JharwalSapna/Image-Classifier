@@ -204,5 +204,5 @@ The project includes a GitHub Actions pipeline (`.github/workflows/ci.yaml`) tha
 
 ## Repository
 
-GitHub: [https://github.com/JharwalSapna/End-to-End-Cats-vs-Dogs-Classifier](https://github.com/JharwalSapna/End-to-End-Cats-vs-Dogs-Classifier)
+GitHub: [https://github.com/JharwalSapna/Image-Classifier](https://github.com/JharwalSapna/Image-Classifier)
 
