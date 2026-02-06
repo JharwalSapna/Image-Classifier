@@ -23,8 +23,7 @@ The project follows a modular MLOps architecture ensuring separation of concerns
 ```mermaid
 flowchart TB
     subgraph CI_CD["CI/CD Pipeline"]
-        Push[GitHub Push] --> Lint
-        Lint --> Test
+        Push[GitHub Push] --> Test
         Test --> Build[Docker Build]
     end
 
@@ -47,8 +46,8 @@ flowchart TB
         Img[Docker Image] --> K8s[Kubernetes/Docker]
         K8s --> Pod1[Pod 1]
         K8s --> Pod2[Pod 2]
-        LB[LoadBalancer] --> Pod1
-        LB --> Pod2
+        Svc[Service] --> Pod1
+        Svc --> Pod2
     end
 
     subgraph Monitor["Monitoring"]
