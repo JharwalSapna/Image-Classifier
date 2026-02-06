@@ -199,11 +199,10 @@ Includes panels for:
 
 ## 🔄 CI/CD Pipeline
 The project includes a GitHub Actions pipeline (`.github/workflows/ci.yaml`) that:
-1.  **Lints** the code with Flake8.
-2.  **Tests** the capabilities with Pytest (`tests/`).
-3.  **Builds** the Docker image upon successful checks.
+1.  **Tests** the capabilities with Pytest (`tests/`).
+2.  **Builds** the Docker image upon successful checks.
 
 ## Repository
 
-GitHub: [https://github.com/JharwalSapna/Image-Classifier](https://github.com/JharwalSapna/Image-Classifier)
+GitHub: [https://github.com/JharwalSapna/End-to-End-Cats-vs-Dogs-Classifier](https://github.com/JharwalSapna/End-to-End-Cats-vs-Dogs-Classifier)
 
