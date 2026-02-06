@@ -16,6 +16,50 @@ The goal of this project is to provide a robust, scalable solution for classifyi
 
 ---
 
+## 🏗️ Architecture
+
+The project follows a modular MLOps architecture ensuring separation of concerns between data, training, and deployment.
+
+```mermaid
+flowchart TB
+    subgraph CI_CD["CI/CD Pipeline"]
+        Push[GitHub Push] --> Lint
+        Lint --> Test
+        Test --> Build[Docker Build]
+    end
+
+    subgraph Training["Training Pipeline"]
+        Raw[Raw Data] --> DVC[DVC Versioning]
+        DVC --> Preprocess[Preprocessing]
+        Preprocess --> Train[Train Model]
+        Train --> MLflow[MLflow Tracking]
+        Train --> Model[Best Model]
+    end
+
+    subgraph Serving["Serving Layer"]
+        API[FastAPI]
+        API --> Pred["/predict"]
+        API --> Health["/health"]
+        API --> Metrics["/metrics"]
+    end
+
+    subgraph Deploy["Deployment"]
+        img[Docker Image] --> K8s[Kubernetes/Docker]
+        K8s --> Pod1[Pod 1]
+        K8s --> Pod2[Pod 2]
+    end
+
+    subgraph Monitor["Monitoring"]
+        Prom[Prometheus] --> Graf[Grafana]
+    end
+
+    Build --> img
+    Model --> API
+    API --> img
+    Pod1 --> Prom
+    Pod2 --> Prom
+```
+
 ## 📂 Project Structure
 
 ```bash
