@@ -44,20 +44,21 @@ flowchart TB
     end
 
     subgraph Deploy["Deployment"]
-        img[Docker Image] --> K8s[Kubernetes/Docker]
+        Img[Docker Image] --> K8s[Kubernetes/Docker]
         K8s --> Pod1[Pod 1]
         K8s --> Pod2[Pod 2]
+        LB[LoadBalancer] --> Pod1
+        LB --> Pod2
     end
 
     subgraph Monitor["Monitoring"]
         Prom[Prometheus] --> Graf[Grafana]
     end
 
-    Build --> img
-    Model --> API
-    API --> img
-    Pod1 --> Prom
-    Pod2 --> Prom
+    CI_CD --> Training
+    Training --> Serving
+    Serving --> Deploy
+    Deploy --> Monitor
 ```
 
 ## 📂 Project Structure
